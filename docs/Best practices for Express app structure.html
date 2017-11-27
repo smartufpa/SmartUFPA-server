@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" href="/img/fav/fav64.png" />
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml" />
+
+
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@fidanov" />
+    <meta name="twitter:creator" content="@fidanov" />
+    <meta name="twitter:title" content="Best practices for Express app structure" />
+    <meta name="twitter:description" content="" />
+    
+    <meta name="twitter:image" content="https://www.terlici.com/img/posts/2014-08-25-best-practices-express-structure-750x400.jpg" />
+    
+
+    <!-- Rich Pin & Facebook -->
+    <meta property="og:url" content="https://www.terlici.com/2014/08/25/best-practices-express-structure.html" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Best practices for Express app structure" />
+    <meta property="og:description" content="" />
+    <meta property="og:site_name" content="Terlici" />
+    
+    <meta property="og:image" content="https://www.terlici.com/img/posts/2014-08-25-best-practices-express-structure-750x400.jpg" />
+    <meta property="og:image:url" content="https://www.terlici.com/img/posts/2014-08-25-best-practices-express-structure-750x400.jpg" />
+    
+    <meta property="article:published_time" content="2014-08-25" />
+    <meta property="article:author" content="Stefan Fidanov" />
+    
+
+
+    <title>Best practices for Express app structure</title>
+    <meta name="description" content=""/>
+
+    <link href="/css/style.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <section class="Main">
+      <header class="Top">
+        <div class="Top-logo">terlici</div>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/blog/">Blog</a>
+          <a href="http://terlici.teachable.com/courses/best-practices-for-node-express-applications">Courses</a>
+          <a href="/services.html">Services</a>
+          <a href="/products.html">Products</a>
+          <a href="/portfolio.html">Portfolio</a>
+        </nav>
+      </header>
+
+      <section class="Post">
+  <time class="Post-date" datetime="2014-08-25" pubdate></time>
+
+
+  
+  <img src="/img/posts/2014-08-25-best-practices-express-structure-750x400.jpg" class="Post-head">
+  
+
+  <h1 class="Post-title">Best practices for Express app structure</h1>
+  <div class="Post-author">by Stefan</div>
+  <article class="Post-text"><p>Node and Express don’t come with a strict file and folder structure. Instead, you
+can build your web app any way you like. This is great, especially for small apps.
+It is easy to start, learn and experiment.</p>
+
+<p>However, as your application grows in size and complexity, things might get confusing.
+Your code becomes messy. As your team grows, it becomes harder to work on the same
+code base. You are fighting with conflicts each time the code is merged. Adding
+new features and handling new situations constantly requires changes in your application
+structure. Moreover, there are so many different ways to organise your files and
+your code, and it is hard to choose which one is the right for you.</p>
+
+<p>You would like to have a file structure where different files and folders are
+responsible for different tasks. You want your project to be easy for multiple
+people to work on at the same time, and then their work to be merged with as
+little conflicts as possible. You want to keep your code clean. You want your
+file structure to allow you to easily add new features.</p>
+
+<p>This can be achieved. We’ve had the same problems and there is a way to structure
+your app which will improve the situation and fix many of the problems described
+above.</p>
+
+<p>Our structure will be based on the <a href="http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller">Model-View-Controller</a>
+(MVC) design pattern. This pattern is great for separating the responsibility of
+the different parts of app and makes your code easier to maintain. Let’s see how
+you can effectively implement it with an Express web application. We won’t discuss
+the merits of MVC, but instead we will focus on how to properly set it up with
+Express and we will also look at some other best practices. We’ve used this on
+variety of apps and sizes with both large and small teams and the results have
+always been great.</p>
+
+<h3 id="example">Example</h3>
+
+<p>Let’s look at the following example. An application where a user can login, register
+and leave a comment for everyone to admire. Below is the files and folders structure.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>project/
+  controllers/
+    comments.js
+    index.js
+    users.js
+  helpers/
+    dates.js
+  middlewares/
+    auth.js
+    users.js
+  models/
+    comment.js
+    user.js
+  public/
+    libs/
+    css/
+    img/
+  views/
+    comments/
+      comment.jade
+    users/
+    index.jade
+  tests/
+    controllers/
+    models/
+      comment.js
+    middlewares/
+    integration/
+    ui/
+  .gitignore
+  app.js
+  package.json
+</code></pre>
+</div>
+
+<p>It might seems complex and large, but don’t worry. By the time you have finished
+reading this essay, you will fully understand every part of it. It is actually
+very simple.</p>
+
+<p>Let’s see what files and folders there are at the root of our project with a brief
+explanation of what each of them is about:</p>
+
+<ul>
+  <li><strong>controllers/</strong> – defines your app routes and their logic</li>
+  <li><strong>helpers/</strong> – code and functionality to be shared by different parts of the project</li>
+  <li><strong>middlewares/</strong> – Express middlewares which process the incoming requests before handling them down to the routes</li>
+  <li><strong>models/</strong> – represents data, implements business logic and handles storage</li>
+  <li><strong>public/</strong> – contains all static files like images, styles and javascript</li>
+  <li><strong>views/</strong> – provides templates which are rendered and served by your routes</li>
+  <li><strong>tests/</strong> – tests everything which is in the other folders</li>
+  <li><strong>app.js</strong> – initializes the app and glues everything together</li>
+  <li><strong>package.json</strong> – remembers all packages that your app depends on and their versions</li>
+</ul>
+
+<p>A thing to bear in mind here: it is important not only how you structure your files
+and folders, but also what each file is responsible for and what it should know
+about the outside world.</p>
+
+<h3 id="models">Models</h3>
+
+<p>Models are the files where you interact with your database. They contain all the
+methods and functions which will handle your data. This includes not only the
+methods for creating, reading, updating and deleting items, but also any additional
+business logic. For example, if you had a car model, you could have a mountTyres
+method.</p>
+
+<p>You should create at least one file for each type of data in your database. In
+our example, we have users and comments, therefore we have a user model and a
+comment model. Sometimes, when a model file becomes too large, it might be better
+to break it into several files, based on some internal logic.</p>
+
+<p>You should also try to make your models independent from the outside world. They
+don’t need to know about other models and they should never include them. They
+don’t need to know about controllers or who uses them. They should never receive
+request or response objects. They should never return http errros, but they should
+return model specific errors.</p>
+
+<p>All this will make your models much more maintainable. They will be tested easily
+because they will have very few and clear dependencies. Models can be moved around
+if needed and they can be used by anyone. Changing something in one model, doesn’t affect
+any other.</p>
+
+<p>Let’s check the models from our example and see how are they implement according
+to the points we’ve talked above. Below is the comment model.</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">db</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'../db'</span><span class="p">)</span>
+
+<span class="c1">// Create new comment in your database and return its id</span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">create</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="nx">text</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">comment</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">user</span><span class="p">:</span> <span class="nx">user</span><span class="p">,</span>
+    <span class="na">text</span><span class="p">:</span> <span class="nx">text</span><span class="p">,</span>
+    <span class="na">date</span><span class="p">:</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">toString</span><span class="p">()</span>
+  <span class="p">}</span>
+
+  <span class="nx">db</span><span class="p">.</span><span class="nx">save</span><span class="p">(</span><span class="nx">comment</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// Get a particular comment</span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">get</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">fetch</span><span class="p">({</span><span class="na">id</span><span class="p">:</span><span class="nx">id</span><span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">docs</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="c1">// Get all comments</span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">all</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">fetch</span><span class="p">({},</span> <span class="nx">cb</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// Get all comments by a particular user</span>
+<span class="nx">exports</span><span class="p">.</span><span class="nx">allByUser</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">fetch</span><span class="p">({</span><span class="na">user</span><span class="p">:</span> <span class="nx">user</span><span class="p">},</span> <span class="nx">cb</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>The user model is not included. The only thing we require is that whoever uses
+this module provides us with something to identify the user. It might be a user
+id or a user name or maybe something else entirely. The comment model doesn’t
+care what it is, it only cares that it can be stored.</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">db</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'../db'</span><span class="p">)</span>
+  <span class="p">,</span> <span class="nx">crypto</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'crypto'</span><span class="p">)</span>
+
+<span class="nx">hash</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">password</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">crypto</span><span class="p">.</span><span class="nx">createHash</span><span class="p">(</span><span class="s1">'sha1'</span><span class="p">).</span><span class="nx">update</span><span class="p">(</span><span class="nx">password</span><span class="p">).</span><span class="nx">digest</span><span class="p">(</span><span class="s1">'base64'</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="nx">exports</span><span class="p">.</span><span class="nx">create</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">email</span><span class="p">,</span> <span class="nx">password</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">user</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">name</span><span class="p">:</span> <span class="nx">name</span><span class="p">,</span>
+    <span class="na">email</span><span class="p">:</span> <span class="nx">email</span><span class="p">,</span>
+    <span class="na">password</span><span class="p">:</span> <span class="nx">hash</span><span class="p">(</span><span class="nx">password</span><span class="p">),</span>
+  <span class="p">}</span>
+
+  <span class="nx">db</span><span class="p">.</span><span class="nx">save</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="nx">exports</span><span class="p">.</span><span class="nx">get</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">fetch</span><span class="p">({</span><span class="na">id</span><span class="p">:</span><span class="nx">id</span><span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">docs</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="nx">exports</span><span class="p">.</span><span class="nx">authenticate</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">email</span><span class="p">,</span> <span class="nx">password</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">fetch</span><span class="p">({</span><span class="na">email</span><span class="p">:</span><span class="nx">email</span><span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">docs</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">docs</span><span class="p">.</span><span class="nx">length</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">()</span>
+
+    <span class="nx">user</span> <span class="o">=</span> <span class="nx">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">password</span> <span class="o">===</span> <span class="nx">hash</span><span class="p">(</span><span class="nx">password</span><span class="p">))</span> <span class="p">{</span>
+      <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">cb</span><span class="p">()</span>
+    <span class="p">}</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="nx">exports</span><span class="p">.</span><span class="nx">changePassword</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">password</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">update</span><span class="p">({</span><span class="na">id</span><span class="p">:</span><span class="nx">id</span><span class="p">},</span> <span class="p">{</span><span class="na">password</span><span class="p">:</span> <span class="nx">hash</span><span class="p">(</span><span class="nx">password</span><span class="p">)},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">affected</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">affected</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="p">})</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>In addition to the functionality needed for creating and managing users, there
+are also methods used for user authentication and password management. Again,
+this model doesn’t know about the existence of any other model, controller or
+other parts of the application.</p>
+
+<h3 id="views">Views</h3>
+
+<p>This folder contains all the templates which are rendered by your application.
+This is the place where usually the designers in your team will work.</p>
+
+<p>You would like to have one sub-folder for templates corresponding to each of your
+controllers. This way, you will group the templates for the same tasks together.</p>
+
+<p>Choosing a template language can be confusing because there are so many choices.
+Our favorite template languages, and the ones we use all the time, are <a href="http://jade-lang.com">Jade</a>
+and <a href="http://mustache.github.io/">Mustache</a>. Jade is great for generating html pages. It makes writing
+html tags much shorter and more readable. It also uses JavaScript for conditions
+and iteration. Mustache on the other hand, is focused on rendering any kind of
+template and it provides the minimum logical operators as possible with very little
+way of processing your data. This makes it excellent for writing very clean templates,
+which are focused on presenting your data instead of processing it.</p>
+
+<p>A best practice for writing good templates is to avoid doing any processing in
+the templates. If your data needs to be processed before it is presented, do it
+in your controller. Also, avoid adding too much logic, especially if this logi
+ can be moved to the controller.</p>
+
+<figure class="highlight"><pre><code class="language-jade" data-lang="jade">doctype html
+html
+  head
+    title Your comment web app
+  body
+    h1 Welcome and leave your comment
+    each comment in comments
+      article.Comment
+        .Comment-date= comment.date
+        .Comment-text= comment.text</code></pre></figure>
+
+<p>As you see, it expects that the data is already processed in the controller
+rendering this template.</p>
+
+<h3 id="controllers">Controllers</h3>
+
+<p>This is the folder where you will be defining all the routes that your app will
+serve. Your controllers will handle web requests, serve your templates to the user
+and interact with your models to process and retrieve data. It’s the glue which
+connects and controls your web app.</p>
+
+<p>Usually you will have at least one file for each logical part of your application.
+For example, one file to handle comments action, another file to handle requests
+about users and so on. It’s a good practice that all routes from the same controller
+begin with the same prefix. For example <strong>/comments/all</strong> and <strong>/comments/new</strong>.</p>
+
+<p>It’s sometimes hard to decide what should go into a controller and what should
+go into the model. A best practice is that a controller should never directly
+access the database. It should never call methods like “write”, “update”, “fetch”
+which most database drivers provide. Instead it should rely on model methods.
+For example if you have a <strong>car</strong> model, and the you want to mount 4 wheels to
+the car, the controller will not call <strong>db.update(id, {wheels: 4})</strong> but
+instead it will call something like <strong>car.mountWheels(id, 4)</strong>.</p>
+
+<p>Below is the controller responsible for the comments.</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'express'</span><span class="p">)</span>
+  <span class="p">,</span> <span class="nx">router</span> <span class="o">=</span> <span class="nx">express</span><span class="p">.</span><span class="nx">Router</span><span class="p">()</span>
+  <span class="p">,</span> <span class="nx">Comment</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'../models/comment'</span><span class="p">)</span>
+  <span class="p">,</span> <span class="nx">auth</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'../middlewares/auth'</span><span class="p">)</span>
+
+<span class="nx">router</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">'/'</span><span class="p">,</span> <span class="nx">auth</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">user</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span>
+  <span class="nx">text</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">text</span>
+
+  <span class="nx">Comment</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="nx">text</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">comment</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">redirect</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
+  <span class="p">})</span>
+<span class="p">})</span>
+
+<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">'/:id'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">Comment</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">comment</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="s1">'comments/comment'</span><span class="p">,</span> <span class="p">{</span><span class="na">comment</span><span class="p">:</span> <span class="nx">comment</span><span class="p">})</span>
+  <span class="p">})</span>
+<span class="p">})</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">router</span></code></pre></figure>
+
+<p>There is also an <strong>index.js</strong> file in the controller folder. It’s purpose is
+to load all other controllers and maybe define some paths which don’t have a common
+prefix like a home page route for example.</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'express'</span><span class="p">)</span>
+  <span class="p">,</span> <span class="nx">router</span> <span class="o">=</span> <span class="nx">express</span><span class="p">.</span><span class="nx">Router</span><span class="p">()</span>
+  <span class="p">,</span> <span class="nx">Comment</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'../models/comment'</span><span class="p">)</span>
+
+<span class="nx">router</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="s1">'/comments'</span><span class="p">,</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'./comments'</span><span class="p">))</span>
+<span class="nx">router</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="s1">'/users'</span><span class="p">,</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'./users'</span><span class="p">))</span>
+
+<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">'/'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">Comments</span><span class="p">.</span><span class="nx">all</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">comments</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">render</span><span class="p">(</span><span class="s1">'index'</span><span class="p">,</span> <span class="p">{</span><span class="na">comments</span><span class="p">:</span> <span class="nx">comments</span><span class="p">})</span>
+  <span class="p">})</span>
+<span class="p">})</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">router</span></code></pre></figure>
+
+<p>This file’s router holds all your routes. This is the only router that your
+application has to load at startup.</p>
+
+<h3 id="middlewares">Middlewares</h3>
+
+<p>In this folder, you will store all your Express middlewares. The purpose of a
+middleware is to extract a common controller code, which should be executed on
+multiple requests and usually modifies the request and/or the response objects.</p>
+
+<p>Just like a controller, a middleware should never directly access the database.
+Instead it should use your models for such tasks.</p>
+
+<p>Below is the users middleware, from the <strong>middlewares/users.js</strong> file. Its
+purpose is to load the user making the request.</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">User</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'../models/user'</span><span class="p">)</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">session</span> <span class="o">&amp;&amp;</span> <span class="nx">req</span><span class="p">.</span><span class="nx">session</span><span class="p">.</span><span class="nx">user</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">User</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">session</span><span class="p">.</span><span class="nx">user</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">user</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">user</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">req</span><span class="p">.</span><span class="nx">user</span> <span class="o">=</span> <span class="nx">user</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">delete</span> <span class="nx">req</span><span class="p">.</span><span class="nx">user</span>
+        <span class="k">delete</span> <span class="nx">req</span><span class="p">.</span><span class="nx">session</span><span class="p">.</span><span class="nx">user</span>
+      <span class="p">}</span>
+
+      <span class="nx">next</span><span class="p">()</span>
+    <span class="p">})</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">next</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>This middleware uses the user model and it never directly access the database.</p>
+
+<p>Next, the authorization middleware, which is used when you want to prevent
+unauthorized access on some routes.</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">next</span><span class="p">()</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mi">401</span><span class="p">).</span><span class="nx">end</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>It doesn’t have any external dependencies. If you look at the controllers files
+above, you can see how it is applied.</p>
+
+<h3 id="helpers">Helpers</h3>
+
+<p>This folder contains utility code, which is used at multiple models, middlewares
+or controllers, but does not fall under the category they cover. Usually you will
+have different files for different common tasks.</p>
+
+<p>An example is a helper file which provides methods for managing dates and times.</p>
+
+<h3 id="public">Public</h3>
+
+<p>This folder is for static files only. Usually, it has-sub folders like <strong>css</strong>,
+<strong>libs</strong>, and <strong>img</strong> for CSS styles, images and JavaScript libraries like
+jQuery. It’s a best practice this folder to be served not by your application
+but by an Nginx or Apache server as they are much better than Node in serving
+static files.</p>
+
+<h3 id="tests">Tests</h3>
+
+<p>Every project needs tests, and you need all tests to be together. To help with
+managing them, you will separate them in several sub-folders.</p>
+
+<ul>
+  <li>controllers</li>
+  <li>helpers</li>
+  <li>models</li>
+  <li>middlewares</li>
+  <li>integration</li>
+  <li>ui</li>
+</ul>
+
+<p><strong>controllers</strong>, <strong>helpers</strong>, <strong>models</strong> and <strong>middlewares</strong> are pretty clear.
+They test the code from their respective counterparts at the root of your project.
+In each folder you should have one file for each file in the original folders and
+it usually has the exact same name. This makes it easier to find and maintain
+your tests.</p>
+
+<p>In the 4 folders above, most of your tests will be unit tests, which means that
+you are testing your code isolated from the rest of the application. However, the
+<strong>integration</strong> folder contains test which will ensure that all your application
+parts work correctly together. For example, it will have tests which will check
+that the right middlewares are loaded at the right time. These tests are usually
+slower than your unit tests.</p>
+
+<p>The UI tests in the <strong>ui</strong> folder are similar to the integration tests because
+they also ensure that everything works well together. However, they are usually
+executed in the browser and they simulate the behaviour of a real person working
+with your application. Usually, they are even slower than the integration tests.</p>
+
+<p>It’s good practice that your unit tests in the <strong>controllers</strong>, <strong>helpers</strong>,
+<strong>models</strong> and <strong>middlewares</strong> folders cover as much code as possible. Try to
+test every edge case. Your <strong>integration</strong> tests don’t need to be this extensive.
+You’ve already covered the functionality. You only need to ensure that all different
+parts of your application work together. The UI tests don’t need to test every
+edge case either, but they need to ensure that every UI component is working.</p>
+
+<h3 id="other-files">Other files</h3>
+<p>The last files from our structure are <strong>app.js</strong>, <strong>package.json</strong>.</p>
+
+<p><strong>app.js</strong> is the starting point of your application. It loads everything and
+it begins serving user requests.</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'express'</span><span class="p">)</span>
+  <span class="p">,</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">()</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">engine</span><span class="p">(</span><span class="s1">'jade'</span><span class="p">,</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'jade'</span><span class="p">).</span><span class="nx">__express</span><span class="p">)</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">'view engine'</span><span class="p">,</span> <span class="s1">'jade'</span><span class="p">)</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">express</span><span class="p">.</span><span class="kr">static</span><span class="p">(</span><span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">'/public'</span><span class="p">))</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">require</span><span class="p">(</span><span class="s1">'./middlewares/users'</span><span class="p">))</span>
+<span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">require</span><span class="p">(</span><span class="s1">'./controllers'</span><span class="p">))</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'Listening on port 3000...'</span><span class="p">)</span>
+<span class="p">})</span></code></pre></figure>
+
+<p>You need just one line to load all routes from your controllers. It’s
+just after loading the middleware responsible for loading the active user.</p>
+
+<p>The <strong>package.json</strong> file main purpose is to remember your application
+dependencies and their respective versions.</p>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
+  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Comments App"</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.0.0"</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Comments for everyone."</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"main"</span><span class="p">:</span><span class="w"> </span><span class="s2">"app.js"</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"scripts"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node app.js"</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"test"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node_modules/.bin/mocha tests/**"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nt">"keywords"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="s2">"comments"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"users"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"node"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"express"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"structure"</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nt">"author"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Terlici Ltd."</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"license"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MIT"</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"dependencies"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"express"</span><span class="p">:</span><span class="w"> </span><span class="s2">"^4.9.5"</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"jade"</span><span class="p">:</span><span class="w"> </span><span class="s2">"^1.7.0"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nt">"devDependencies"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"mocha"</span><span class="p">:</span><span class="w"> </span><span class="s2">"^1.21.4"</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"should"</span><span class="p">:</span><span class="w"> </span><span class="s2">"^4.0.4"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>It can also do a few other handy tricks which will allow you to run your app
+with <strong>npm start</strong> and test it with <strong>npm test</strong>. A great interactive guide
+explaining it can be found here: <a href="http://browsenpm.org/package.json">http://browsenpm.org/package.json</a></p>
+
+<h3 id="whats-next">What’s next?</h3>
+
+<p>All of the points mentioned here might be best practices, but setting
+them for every new project is a tedious task and it is easy to forget
+something. To help you, we’ve created a GitHub repository which contains
+all of them. You can fork it or clone it and start your new project right
+away. What’s more, we are keeping for you all project dependencies up to
+date, so that your new app uses always the latest and the best modules.
+Check it out:</p>
+
+<p><a href="https://github.com/terlici/base-express">https://github.com/terlici/base-express</a></p>
+
+<p><br />
+<strong>Other articles that you may like</strong></p>
+
+<ul>
+  <li><a href="/2014/09/29/express-router.html">Organizing your app routes with the Express 4 Router</a></li>
+  <li><a href="/2015/05/16/uploading-files-locally.html">Uploading files locally with Node &amp; Express</a></li>
+  <li><a href="/2014/09/15/node-testing.html">Unit tests with Node, Express &amp; Mongo</a></li>
+  <li><a href="/2015/04/03/mongodb-node-express.html">Connecting and Working with MongoDB with Node &amp; Express</a></li>
+</ul>
+
+</article>
+
+  <footer class="Post-share">
+    <h3>Did you like this article?</h3>
+
+    <div>
+      Please share it on
+      <a class="Post-share__btn" href="https://twitter.com/home?status=I'm reading 'Best practices for Express app structure' by @fidanov https://www.terlici.com/2014/08/25/best-practices-express-structure.html" target="_blank"><img src="/img/Twitter_Logo_White_On_Blue.jpg"></a>
+      <a class="Post-share__btn" href="https://www.facebook.com/sharer/sharer.php?u=https://www.terlici.com/2014/08/25/best-practices-express-structure.html" target="_blank"><img src="/img/FB-f-Logo__blue_29.png"></a>
+      <a class="Post-share__btn" href="https://plus.google.com/share?url=https://www.terlici.com/2014/08/25/best-practices-express-structure.html" target="_blank"><img src="/img/gplus-32.png"></a>
+      <a class="Post-share__btn" href="https://pinterest.com/pin/create/button/?url=https://www.terlici.com/2014/08/25/best-practices-express-structure.html&media=https://www.terlici.com/img/posts/2014-08-25-best-practices-express-structure-750x400.jpg&description=Best practices for Express app structure" target="_blank"><img src="/img/pin_icon_64x64.png"></a>
+    </div>
+  </footer>
+</section>
+
+<!-- Subscription Forms -->
+
+
+<form action="https://terlici.createsend.com/t/j/s/npmj/" method="post" class="SubscriptionForm">
+    <section class="SubscriptionForm-message">
+        Enter your email and get our <b>NPM Cheat Sheet for NodeJS Developers</b> and
+        the links to our <b>5 most popular articles</b> which have helped thousands of
+        developers build faster, more reliable and easier to maintain Node applications.
+    </section>
+
+    <label class="SubscriptionForm-label" for="name">Your First Name</label>
+    <input name="cm-name" type="text" required placeholder="Name" class="SubscriptionForm-field" id="name" />
+
+    <label class="SubscriptionForm-label" for="email">Your Email</label>
+    <input name="cm-npmj-npmj" type="email" required placeholder="Email" class="SubscriptionForm-field" id="email" />
+
+    <input type="submit" value="Yes, send me the articles!" class="SubscriptionForm-submit" />
+    <small class="SubscriptionForm-nospam">100% privacy. No spam.</small>
+</form>
+
+<article class="NodeCourseBox">
+  <h2><strong>Best Practices for Node & Express Web Apps</strong></h2>
+
+  <p>
+    Express makes it very simple to develop your web app, but it lacks structure.
+    It is easy to begin but when your app grows in complexity and your team
+    in size developing and maintaining your app is no more simple.
+  </p>
+
+  <p>
+    This is not how it should be. Node & Express promise to make your life
+    easier.
+  </p>
+
+  <p>
+    We have created a video course for you to teach you what we have learned
+    from years of development with Node & Express.
+  </p>
+
+  <p>
+    It is all about best practices which make development and maintenance of
+    Express apps simple again.
+  </p>
+
+  <a href="http://terlici.teachable.com/courses/best-practices-for-node-express-applications" class="NodeCourseBox-cta">
+    Join our video course on best practices in ExpressJS
+  </a>
+</article>
+
+
+
+
+<article class="DiffClientsBox">
+    <p>
+    Freelancing is hard. You feel alone. You have to manage everything yourself
+    and some clients make it even harder than it should be.
+    </p>
+
+    <p>
+    Never ending projects. Clients constantly calling you for no reason.
+    </p>
+
+    <p>
+    Sounds familiar? Join hundreds of freelancers with our free
+    </p>
+
+    <a href="/get-guide-painful-clients.html" class="DiffClientsBox-cta">
+      7-part guide to dealing with difficult clients
+    </a>
+</article>
+
+<hr />
+
+<section class="post-authors-bio">
+  <div>
+    <img src="/img/stefan.jpg" alt="Stefan Fidanov" class="post-authors-bio-photo" />
+    <img src="/img/vasil.jpg" alt="Vasil Lyutskanov" class="post-authors-bio-photo" />
+  </div>
+
+  <p>
+    
+
+    We are Stefan Fidanov & Vasil Lyutskanov. We share actionable advice about
+    development with Node, Express, React and other web & mobile technologies.
+
+    
+  </p>
+  <p>
+    It is everything that we have learned from years of experience working with
+    customers from all over the world on projects of all sizes.
+  </p>
+
+  <a href="https://twitter.com/fidanov" class="twitter-follow-button" data-show-count="false" data-size="large" data-dnt="true">Follow @fidanov</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+</section>
+
+
+<!-- Subscription Form JS -->
+<script type="text/javascript" src="/libs/zepto.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $('.SubscriptionForm').submit(function (e) {
+            e.preventDefault();
+            $.getJSON(
+                this.action + "?callback=?",
+                $(this).serialize(),
+                function (data) {
+                    if (data.Status === 400) {
+                        alert("Error: " + data.Message);
+                    } else { // 200
+                        $('.SubscriptionForm').empty()
+
+                        var success = $("<div class='SubscriptionForm-success'/>")
+                        success.html("Thank you!")
+
+                        $('.SubscriptionForm').append(success)
+                    }
+                }
+            )
+
+            return false
+        })
+    })
+</script>
+
+
+
+
+      <hr/>
+      <section class="Address">
+        © 2016 Terlici Ltd
+        <!-- &middot; <a href="/careers.html">Careers</a> -->
+        &middot; <a href="/terms.html">Terms</a>
+        &middot; <a href="/privacy.html">Privacy</a>
+      </section>
+    </section>
+
+    <section class="CookieNotice js-cookie-notice">
+      <div class="CookieNotice-content">
+        We use cookies to personalize content and ensure the best possible
+        experience for you.
+        <a href="/privacy.html">Learn more...</a>
+
+        <div class="CookieNotice-close js-cookie-notice-close">&times;</div>
+      </div>
+
+      <div class="CookieNotice-close--mobile js-cookie-notice-close">Close</div>
+    </section>
+
+    <!-- Scripts -->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-15023507-2']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+
+    <!-- Cookie Notice -->
+    <script type="text/javascript">
+    (function() {
+      var NAME = "cookie-notice"
+      function getCookie() {
+        var value = '; ' + document.cookie
+        var parts = value.split('; ' + NAME + '=')
+        return parts.length != 2 ? undefined : parts.pop().split(';').shift()
+      }
+
+      function setCookie() {
+        document.cookie = NAME + "=hide; expires=Thu, 18 Dec 2030 12:00:00 UTC"
+      }
+
+      function close() {
+        setCookie()
+        document.querySelector(".js-cookie-notice").style.display = "none"
+      }
+
+      if (getCookie() !== "hide") {
+        document.querySelector(".js-cookie-notice").style.display = "block"
+
+        var btns = document.querySelectorAll(".js-cookie-notice-close")
+        btns[0].addEventListener("click", close)
+        btns[1].addEventListener("click", close)
+      }
+    }) ()
+    </script>
+
+  </body>
+</html>

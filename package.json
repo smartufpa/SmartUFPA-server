@@ -1,0 +1,28 @@
+{
+  "name": "smartufpa-server",
+  "version": "1.0.0",
+  "description": "Base server to supply funcionalities for Android App SmartUFPA",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smartufpa/SmartUFPA-server.git"
+  },
+  "keywords": [
+    "smartufpa",
+    "smartcities",
+    "smartcampus",
+    "node-server"
+  ],
+  "author": "kaeuchoa",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/smartufpa/SmartUFPA-server/issues"
+  },
+  "homepage": "https://github.com/smartufpa/SmartUFPA-server#readme",
+  "dependencies": {
+    "express": "^4.16.2"
+  }
+}
