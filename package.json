@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/smartufpa/SmartUFPA-server#readme",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "express": "^4.16.2",
     "mongoose": "^5.2.17"
   },
