@@ -1,23 +1,25 @@
-const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
+const bodyParser = require('body-parser');
 const PORT = 8080;
+const db = require('./helpers/db_helper');
 
 const app = express()
+
+const usersRoute = require('./routes/users_route');
+const index = require('./routes/index');
 
 app.listen(PORT, function () {
   console.log('Servidor iniciado em localhost: ' + PORT);
 });
 
+db.connect();
 
-let uri = 'mongodb+srv://kae:ZBQgYVVkL5OA1R6B@clusterteste-bca09.mongodb.net/smart_ufpa?retryWrites=true'
-mongoose.connect(uri,{ useNewUrlParser: true });
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
 
-mongoose.Promise = global.Promise;
-
-const db = mongoose.connection;
-
-db.on('error', console.error.bind(console,'MongoDB connection error'))
+app.use('/', index);
+app.use('/users',usersRoute);
 
 
 module.exports = app;

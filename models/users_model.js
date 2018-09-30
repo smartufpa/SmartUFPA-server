@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
-let Schema = mongoose.Schema();
+var Schema = mongoose.Schema;
 
-let usersSchema = new Schema({
-  _id: Schema.Types.ObjectId,
+var usersSchema = new Schema({
+  _id:  {type: Schema.Types.ObjectId, auto: true},
+  email: String,
   name: String,
   password: String,
   GUIID: String
