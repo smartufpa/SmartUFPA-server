@@ -19,9 +19,20 @@ exports.get = (req, res, next) => {
   });
 };
 
+exports.findUserByEmail =  (req, res, next) => {
+  console.log(`findUserByEmail/${TAG}`);
+  User.find({email: req.params.email}, function (err, user) {
+    let dados = {success: true, data: []};
+    user.forEach(function (value,index) {
+      dados.data.push(value);
+    })
+    res.send(dados);
+  });
+}
+
 exports.findUserById =  (req, res, next) => {
   console.log(`findUserById/${TAG}`);
-  User.find({console_id: req.params.id}, function (err, user) {
+  User.find({_id: req.params.id}, function (err, user) {
     let dados = {success: true, data: []};
     user.forEach(function (value,index) {
       dados.data.push(value);

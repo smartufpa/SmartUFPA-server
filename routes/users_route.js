@@ -5,6 +5,7 @@ const controller = require('../controllers/users_controller')
 
 
 router.get('/', controller.get);
+router.get('/:email', controller.findUserByEmail);
 router.post('/', controller.post);
 router.put('/:id', controller.put);
 router.delete('/:id', controller.delete);
