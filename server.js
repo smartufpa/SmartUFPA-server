@@ -7,6 +7,7 @@ const db = require('./helpers/db_helper');
 const app = express()
 
 const usersRoute = require('./routes/users_route');
+const buildingsRoute = require('./routes/buildings_route');
 const index = require('./routes/index');
 
 app.listen(PORT, function () {
@@ -20,6 +21,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.use('/', index);
 app.use('/users',usersRoute);
+app.use('/buildings',buildingsRoute);
 
 
 module.exports = app;
